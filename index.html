@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartStreamStore - Premium Mobile Phones in Africa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Base Styles */
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --accent: #fd79a8;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #d63031;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Custom Cursor */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            opacity: 0.7;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease, width 0.3s ease, height 0.3s ease;
+            mix-blend-mode: multiply;
+        }
+        
+        .cursor.hovered {
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent);
+            opacity: 0.5;
+        }
+        
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--light);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.5s ease;
+        }
+        
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-phone {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            animation: bounce 1.5s infinite;
+        }
+        
+        .loader-flags {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .loader-flag {
+            width: 40px;
+            height: 30px;
+            border-radius: 4px;
+            background-size: cover;
+            animation: rotateFlags 4s infinite;
+            opacity: 0;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        @keyframes rotateFlags {
+            0% { transform: rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            90% { opacity: 1; }
+            100% { transform: rotate(360deg); opacity: 0; }
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow);
+        }
+        
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .logo i {
+            color: var(--accent);
+        }
+        
+        .nav-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .language-switcher, .currency-switcher {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .language-switcher button, .currency-switcher button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .language-switcher button:hover, .currency-switcher button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 4px;
+            box-shadow: var(--shadow);
+            padding: 0.5rem;
+            display: none;
+            min-width: 120px;
+            z-index: 10;
+        }
+        
+        .dropdown.active {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark);
+            cursor: pointer;
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        .dropdown-item img {
+            width: 20px;
+            height: 15px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80') no-repeat center center/cover;
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+        }
+        
+        .cta-button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(253, 121, 168, 0.4);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(253, 121, 168, 0.6);
+        }
+        
+        /* Stats Section */
+        .stats {
+            background-color: white;
+            padding: 3rem 2rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 2rem;
+            box-shadow: var(--shadow);
+        }
+        
+        .stat-item {
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: var(--dark);
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+        
+        /* Products Section */
+        .products {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            display: inline-block;
+        }
+        
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--success);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+        
+        .product-badge.upcoming {
+            background-color: var(--warning);
+            color: var(--dark);
+        }
+        
+        .product-badge.unboxed {
+            background-color: var(--danger);
+        }
+        
+        .product-media {
+            height: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: var(--transition);
+        }
+        
+        .product-card:hover .product-image {
+            transform: scale(1.05);
+        }
+        
+        .product-play {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.8);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .product-play i {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-left: 5px;
+        }
+        
+        .product-media:hover .product-play {
+            opacity: 1;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-name {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .product-price {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .current-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .original-price {
+            font-size: 1rem;
+            color: #999;
+            text-decoration: line-through;
+        }
+        
+        .product-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .product-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .command-button {
+            flex: 1;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .command-button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .wishlist-button {
+            width: 40px;
+            height: 40px;
+            background-color: var(--light);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wishlist-button:hover {
+            background-color: #e0e0e0;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--danger);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .modal-product {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        .modal-media {
+            position: relative;
+            height: 400px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .modal-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .modal-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .modal-details h3 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .modal-price {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-description {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            color: #555;
+        }
+        
+        .modal-specs {
+            margin-bottom: 2rem;
+        }
+        
+        .spec-item {
+            display: flex;
+            margin-bottom: 0.8rem;
+        }
+        
+        .spec-label {
+            font-weight: bold;
+            min-width: 120px;
+            color: var(--dark);
+        }
+        
+        .spec-value {
+            color: #555;
+        }
+        
+        .modal-form {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+        }
+        
+        .form-submit:hover {
+            background-color: var(--secondary);
+        }
+        
+        /* Payment Methods */
+        .payment-methods {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .payment-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .payment-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .payment-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        
+        .payment-name {
+            font-weight: 500;
+            text-align: center;
+        }
+        
+        /* Admin Panel (Simulated) */
+        .admin-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--dark);
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: var(--transition);
+        }
+        
+        .admin-panel:hover {
+            background: #1e272e;
+        }
+        
+        .admin-modal {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 300px;
+            padding: 1.5rem;
+            z-index: 100;
+            transform: translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+        }
+        
+        .admin-modal.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .admin-modal h3 {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .admin-form input, .admin-form textarea, .admin-form select {
+            width: 100%;
+            padding: 0.6rem;
+            margin-bottom: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .admin-submit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 3rem 2rem 1.5rem;
+            position: relative;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .footer-about {
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            opacity: 0.8;
+        }
+        
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+        
+        .social-icon:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .footer-links h4 {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+        
+        .footer-links h4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: white;
+            opacity: 0.8;
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        
+        .footer-links a:hover {
+            opacity: 1;
+            color: var(--accent);
+            padding-left: 5px;
+        }
+        
+        .footer-contact i {
+            margin-right: 0.5rem;
+            color: var(--accent);
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+            
+            .modal-product {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-media {
+                height: 250px;
+            }
+            
+            .nav-controls {
+                gap: 0.5rem;
+            }
+            
+            .language-switcher button, .currency-switcher button {
+                padding: 0.5rem 0.3rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                align-items: center;
+                gap: 2rem;
+            }
+            
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+            
+            .hero p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-phone">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        <div class="loader-flags">
+            <div class="loader-flag" style="background-image: url('https://flagcdn.com/w40/cg.png')"></div>
+            <div class="loader-flag" style="background-image: url('https://flagcdn.com/w40/zm.png')"></div>
+            <div class="loader-flag" style="background-image: url('https://flagcdn.com/w40/ng.png')"></div>
+            <div class="loader-flag" style="background-image: url('https://flagcdn.com/w40/ke.png')"></div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-bolt"></i>
+                <span>SmartStreamStore</span>
+            </div>
+            <div class="nav-controls">
+                <div class="language-switcher">
+                    <button>
+                        <img src="https://flagcdn.com/w20/gb.png" alt="English">
+                        <span>EN</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown">
+                        <div class="dropdown-item" data-lang="en">
+                            <img src="https://flagcdn.com/w20/gb.png" alt="English">
+                            <span>English</span>
+                        </div>
+                        <div class="dropdown-item" data-lang="fr">
+                            <img src="https://flagcdn.com/w20/fr.png" alt="French">
+                            <span>Français</span>
+                        </div>
+                        <div class="dropdown-item" data-lang="pt">
+                            <img src="https://flagcdn.com/w20/pt.png" alt="Portuguese">
+                            <span>Português</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="currency-switcher">
+                    <button>
+                        <span>USD</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="dropdown">
+                        <div class="dropdown-item" data-currency="USD">
+                            <span>USD ($)</span>
+                        </div>
+                        <div class="dropdown-item" data-currency="ZMW">
+                            <span>ZMW (ZK)</span>
+                        </div>
+                        <div class="dropdown-item" data-currency="XAF">
+                            <span>XAF (FCFA)</span>
+                        </div>
+                        <div class="dropdown-item" data-currency="NGN">
+                            <span>NGN (₦)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Premium Mobile Phones in Africa</h1>
+        <p>Discover the latest smartphones at unbeatable prices. Serving Congo-Brazzaville, Zambia and beyond with quality devices and exceptional service.</p>
+        <button class="cta-button">Shop Now</button>
+    </section>
+    
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-number" id="products-count">0</div>
+            <div class="stat-label">Products</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="users-count">0</div>
+            <div class="stat-label">Happy Customers</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number" id="sales-count">0</div>
+            <div class="stat-label">Completed Sales</div>
+        </div>
+    </section>
+    
+    <!-- Products Section -->
+    <section class="products">
+        <div class="section-title">
+            <h2>Featured Products</h2>
+        </div>
+        <div class="product-grid" id="product-grid">
+            <!-- Products will be inserted here by JavaScript -->
+        </div>
+    </section>
+    
+    <!-- Payment Methods -->
+    <section class="payment-methods">
+        <div class="section-title">
+            <h2>Payment Methods</h2>
+        </div>
+        <div class="payment-grid">
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="payment-name">Cash on Delivery</div>
+            </div>
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fab fa-cc-mastercard"></i>
+                </div>
+                <div class="payment-name">Mastercard</div>
+            </div>
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fab fa-cc-visa"></i>
+                </div>
+                <div class="payment-name">Visa</div>
+            </div>
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="payment-name">Mobile Money</div>
+            </div>
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fab fa-bitcoin"></i>
+                </div>
+                <div class="payment-name">Crypto</div>
+            </div>
+            <div class="payment-card">
+                <div class="payment-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="payment-name">Bank Transfer</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Modal -->
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <button class="close-modal" id="close-modal">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="admin-panel">
+        <i class="fas fa-user-shield"></i>
+        <span>Admin</span>
+    </div>
+    
+    <div class="admin-modal" id="admin-modal">
+        <h3>Add New Product</h3>
+        <form class="admin-form">
+            <input type="text" placeholder="Product Name">
+            <input type="number" placeholder="Price">
+            <select>
+                <option>Boxed</option>
+                <option>Unboxed</option>
+            </select>
+            <select>
+                <option>Available</option>
+                <option>Upcoming</option>
+            </select>
+            <textarea placeholder="Description"></textarea>
+            <input type="text" placeholder="Image URL">
+            <input type="text" placeholder="Video URL (optional)">
+            <button type="button" class="admin-submit">Add Product</button>
+        </form>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-about">
+                <div class="footer-logo">
+                    <i class="fas fa-bolt"></i>
+                    <span>SmartStreamStore</span>
+                </div>
+                <p class="footer-about">Your trusted partner for premium mobile devices in Africa. We bring the latest technology to your fingertips with competitive prices and reliable service.</p>
+                <div class="footer-social">
+                    <div class="social-icon">
+                        <i class="fab fa-facebook-f"></i>
+                    </div>
+                    <div class="social-icon">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <div class="social-icon">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <div class="social-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Products</a></li>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="#">Smartphones</a></li>
+                    <li><a href="#">Tablets</a></li>
+                    <li><a href="#">Accessories</a></li>
+                    <li><a href="#">Refurbished</a></li>
+                    <li><a href="#">New Arrivals</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>Contact Us</h4>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Brazzaville, Congo & Lusaka, Zambia</li>
+                    <li><i class="fas fa-phone-alt"></i> +242 06 123 4567 / +260 97 123 4567</li>
+                    <li><i class="fas fa-envelope"></i> info@smartstreamstore.com</li>
+                    <li><i class="fas fa-clock"></i> Mon-Fri: 9AM - 6PM</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 SmartStreamStore. All Rights Reserved.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Loader
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.querySelector('.loader').classList.add('hidden');
+            }, 2000);
+            
+            // Animate flags
+            const flags = document.querySelectorAll('.loader-flag');
+            flags.forEach((flag, index) => {
+                flag.style.animationDelay = `${index * 0.5}s`;
+            });
+        });
+        
+        // Custom cursor
+        const cursor = document.querySelector('.cursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.pageX + 'px';
+            cursor.style.top = e.pageY + 'px';
+        });
+        
+        // Add hover effect to interactive elements
+        const hoverElements = document.querySelectorAll('a, button, .dropdown-item, .product-card, .payment-card, .social-icon, .command-button, .wishlist-button');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('hovered');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hovered');
+            });
+        });
+        
+        // Language and currency switchers
+        const languageSwitcher = document.querySelector('.language-switcher');
+        const currencySwitcher = document.querySelector('.currency-switcher');
+        
+        languageSwitcher.addEventListener('click', function(e) {
+            if (e.target.closest('.language-switcher button')) {
+                const dropdown = this.querySelector('.dropdown');
+                dropdown.classList.toggle('active');
+                
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown').forEach(drop => {
+                    if (drop !== dropdown) drop.classList.remove('active');
+                });
+            }
+        });
+        
+        currencySwitcher.addEventListener('click', function(e) {
+            if (e.target.closest('.currency-switcher button')) {
+                const dropdown = this.querySelector('.dropdown');
+                dropdown.classList.toggle('active');
+                
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown').forEach(drop => {
+                    if (drop !== dropdown) drop.classList.remove('active');
+                });
+            }
+        });
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.language-switcher') && !e.target.closest('.currency-switcher')) {
+                document.querySelectorAll('.dropdown').forEach(drop => {
+                    drop.classList.remove('active');
+                });
+            }
+        });
+        
+        // Select language/currency
+        document.querySelectorAll('.dropdown-item[data-lang]').forEach(item => {
+            item.addEventListener('click', function() {
+                const lang = this.getAttribute('data-lang');
+                const flag = this.querySelector('img').src;
+                const text = this.querySelector('span').textContent;
+                
+                languageSwitcher.querySelector('button img').src = flag;
+                languageSwitcher.querySelector('button span').textContent = lang.toUpperCase();
+                languageSwitcher.querySelector('.dropdown').classList.remove('active');
+                
+                // In a real app, you would change the language here
+                console.log(`Language changed to ${text}`);
+            });
+        });
+        
+        document.querySelectorAll('.dropdown-item[data-currency]').forEach(item => {
+            item.addEventListener('click', function() {
+                const currency = this.getAttribute('data-currency');
+                const text = this.querySelector('span').textContent;
+                
+                currencySwitcher.querySelector('button span').textContent = currency;
+                currencySwitcher.querySelector('.dropdown').classList.remove('active');
+                
+                // Update prices based on currency
+                updatePrices(currency);
+                console.log(`Currency changed to ${currency}`);
+            });
+        });
+        
+        // Product data
+        const products = [
+            {
+                id: 1,
+                name: "iPhone 14 Pro Max",
+                price: 1299,
+                originalPrice: 1499,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1664478546384-d57ffe74a78c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/XHTrLYShBRQ",
+                status: "available",
+                box: "boxed",
+                description: "The iPhone 14 Pro Max features a stunning 6.7-inch Super Retina XDR display, A16 Bionic chip, and an advanced camera system for incredible photos and videos.",
+                specs: {
+                    "Display": "6.7-inch Super Retina XDR",
+                    "Processor": "A16 Bionic",
+                    "Storage": "128GB/256GB/512GB/1TB",
+                    "Camera": "Pro 48MP + 12MP + 12MP",
+                    "Battery": "Up to 29 hours video playback"
+                }
+            },
+            {
+                id: 2,
+                name: "Samsung Galaxy S23 Ultra",
+                price: 1199,
+                originalPrice: 1399,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1675351080591-8e4c2e0a8c1e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/mFjGABCQJZc",
+                status: "available",
+                box: "boxed",
+                description: "The Samsung Galaxy S23 Ultra comes with a built-in S Pen, 200MP camera, and the fastest mobile processor available for unmatched performance.",
+                specs: {
+                    "Display": "6.8-inch Dynamic AMOLED 2X",
+                    "Processor": "Snapdragon 8 Gen 2",
+                    "Storage": "256GB/512GB/1TB",
+                    "Camera": "200MP + 12MP + 10MP + 10MP",
+                    "Battery": "5000mAh"
+                }
+            },
+            {
+                id: 3,
+                name: "Google Pixel 7 Pro",
+                price: 899,
+                originalPrice: 999,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1666453651037-52ddc49d3e5c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/n5rh7O4IDc0",
+                status: "available",
+                box: "unboxed",
+                description: "The Pixel 7 Pro is powered by Google Tensor G2 and features an incredible camera system with Super Res Zoom up to 30x and Face Unblur.",
+                specs: {
+                    "Display": "6.7-inch QHD+ LTPO OLED",
+                    "Processor": "Google Tensor G2",
+                    "Storage": "128GB/256GB/512GB",
+                    "Camera": "50MP + 12MP + 48MP",
+                    "Battery": "5000mAh"
+                }
+            },
+            {
+                id: 4,
+                name: "OnePlus 11 5G",
+                price: 799,
+                originalPrice: 899,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1675789654280-4c5250c5d1a0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/5Q4z9_0F4hE",
+                status: "upcoming",
+                box: "boxed",
+                description: "The OnePlus 11 5G features Hasselblad Camera for Mobile, 100W SuperVOOC charging, and the latest Snapdragon 8 Gen 2 processor.",
+                specs: {
+                    "Display": "6.7-inch 2K AMOLED",
+                    "Processor": "Snapdragon 8 Gen 2",
+                    "Storage": "128GB/256GB",
+                    "Camera": "50MP + 48MP + 32MP",
+                    "Battery": "5000mAh"
+                }
+            },
+            {
+                id: 5,
+                name: "Xiaomi 13 Pro",
+                price: 999,
+                originalPrice: 1099,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1675789654280-4c5250c5d1a0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/5Q4z9_0F4hE",
+                status: "available",
+                box: "boxed",
+                description: "The Xiaomi 13 Pro features a 1-inch type camera sensor co-developed with Leica, Snapdragon 8 Gen 2, and 120W HyperCharge.",
+                specs: {
+                    "Display": "6.73-inch WQHD+ AMOLED",
+                    "Processor": "Snapdragon 8 Gen 2",
+                    "Storage": "256GB/512GB",
+                    "Camera": "50.3MP + 50MP + 50MP",
+                    "Battery": "4820mAh"
+                }
+            },
+            {
+                id: 6,
+                name: "Tecno Camon 20 Pro",
+                price: 299,
+                originalPrice: 349,
+                currency: "USD",
+                image: "https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80",
+                video: "https://www.youtube.com/embed/5Q4z9_0F4hE",
+                status: "available",
+                box: "unboxed",
+                description: "The Tecno Camon 20 Pro features a 64MP RGBW Ultra Sensitive Sensor, Helio G99 processor, and a unique leather-texture design.",
+                specs: {
+                    "Display": "6.67-inch FHD+ AMOLED",
+                    "Processor": "Helio G99",
+                    "Storage": "256GB",
+                    "Camera": "64MP + 2MP + 2MP",
+                    "Battery": "5000mAh"
+                }
+            }
+        ];
+        
+        // Currency conversion rates (simplified)
+        const conversionRates = {
+            USD: 1,
+            ZMW: 18.5,
+            XAF: 600,
+            NGN: 750
+        };
+        
+        // Format currency
+        function formatCurrency(amount, currency) {
+            const rate = conversionRates[currency] || 1;
+            const convertedAmount = amount * rate;
+            
+            switch(currency) {
+                case 'USD':
+                    return `$${convertedAmount.toFixed(2)}`;
+                case 'ZMW':
+                    return `ZK ${convertedAmount.toFixed(2)}`;
+                case 'XAF':
+                    return `${convertedAmount.toFixed(0)} FCFA`;
+                case 'NGN':
+                    return `₦${convertedAmount.toFixed(2)}`;
+                default:
+                    return `$${amount.toFixed(2)}`;
+            }
+        }
+        
+        // Update prices based on currency
+        function updatePrices(currency) {
+            document.querySelectorAll('.current-price').forEach(el => {
+                const productId = el.closest('.product-card').getAttribute('data-id');
+                const product = products.find(p => p.id == productId);
+                if (product) {
+                    el.textContent = formatCurrency(product.price, currency);
+                }
+            });
+            
+            document.querySelectorAll('.original-price').forEach(el => {
+                const productId = el.closest('.product-card').getAttribute('data-id');
+                const product = products.find(p => p.id == productId);
+                if (product) {
+                    el.textContent = formatCurrency(product.originalPrice, currency);
+                }
+            });
+            
+            if (document.querySelector('.modal-price')) {
+                const productId = document.querySelector('.modal-details').getAttribute('data-id');
+                const product = products.find(p => p.id == productId);
+                if (product) {
+                    document.querySelector('.modal-price').textContent = formatCurrency(product.price, currency);
+                }
+            }
+        }
+        
+        // Render products
+        function renderProducts() {
+            const productGrid = document.getElementById('product-grid');
+            productGrid.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.setAttribute('data-id', product.id);
+                
+                let badgeClass = '';
+                let badgeText = '';
+                
+                if (product.status === 'upcoming') {
+                    badgeClass = 'upcoming';
+                    badgeText = 'Upcoming';
+                } else if (product.box === 'unboxed') {
+                    badgeClass = 'unboxed';
+                    badgeText = 'Unboxed';
+                } else {
+                    badgeClass = '';
+                    badgeText = 'Boxed';
+                }
+                
+                productCard.innerHTML = `
+                    <div class="product-badge ${badgeClass}">${badgeText}</div>
+                    <div class="product-media">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        ${product.video ? '<div class="product-play" data-id="' + product.id + '"><i class="fas fa-play"></i></div>' : ''}
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <div class="product-price">
+                            <span class="current-price">${formatCurrency(product.price, 'USD')}</span>
+                            <span class="original-price">${formatCurrency(product.originalPrice, 'USD')}</span>
+                        </div>
+                        <div class="product-meta">
+                            <span><i class="fas fa-box"></i> ${product.box === 'boxed' ? 'With Box' : 'No Box'}</span>
+                            <span><i class="fas fa-store"></i> ${product.status === 'available' ? 'In Stock' : 'Pre-order'}</span>
+                        </div>
+                        <div class="product-actions">
+                            <button class="command-button" data-id="${product.id}">
+                                <i class="fas fa-shopping-cart"></i> Order Now
+                            </button>
+                            <button class="wishlist-button">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                productGrid.appendChild(productCard);
+            });
+            
+            // Add event listeners to new elements
+            addProductEventListeners();
+        }
+        
+        // Add event listeners to product elements
+        function addProductEventListeners() {
+            // Product play buttons
+            document.querySelectorAll('.product-play').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const productId = this.getAttribute('data-id');
+                    openProductModal(productId);
+                });
+            });
+            
+            // Product cards
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-id');
+                    openProductModal(productId);
+                });
+            });
+            
+            // Command buttons
+            document.querySelectorAll('.command-button').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const productId = this.getAttribute('data-id');
+                    openOrderForm(productId);
+                });
+            });
+            
+            // Wishlist buttons
+            document.querySelectorAll('.wishlist-button').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.innerHTML = this.querySelector('i').classList.contains('far') ? 
+                        '<i class="fas fa-heart" style="color: var(--accent)"></i>' : 
+                        '<i class="far fa-heart"></i>';
+                });
+            });
+        }
+        
+        // Open product modal
+        function openProductModal(productId) {
+            const product = products.find(p => p.id == productId);
+            if (!product) return;
+            
+            const modal = document.getElementById('product-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div class="modal-product">
+                    <div class="modal-media">
+                        ${product.video ? 
+                            `<iframe class="modal-video" src="${product.video}" frameborder="0" allowfullscreen></iframe>` : 
+                            `<img src="${product.image}" alt="${product.name}" class="modal-image">`}
+                    </div>
+                    <div class="modal-details" data-id="${product.id}">
+                        <h3>${product.name}</h3>
+                        <div class="modal-price">${formatCurrency(product.price, 'USD')}</div>
+                        <p class="modal-description">${product.description}</p>
+                        
+                        <div class="modal-specs">
+                            ${Object.entries(product.specs).map(([key, value]) => `
+                                <div class="spec-item">
+                                    <span class="spec-label">${key}:</span>
+                                    <span class="spec-value">${value}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="modal-form">
+                            <h4>Place Your Order</h4>
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" placeholder="Your email">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">WhatsApp Number</label>
+                                <input type="tel" id="phone" placeholder="+242 06 123 4567">
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                <select id="country">
+                                    <option>Congo-Brazzaville</option>
+                                    <option>Zambia</option>
+                                    <option>Nigeria</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <button type="button" class="form-submit">Complete Order</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            
+            // Add event listener to close button
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            
+            // Add event listener to modal background
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+        
+        // Open order form directly
+        function openOrderForm(productId) {
+            const product = products.find(p => p.id == productId);
+            if (!product) return;
+            
+            const modal = document.getElementById('product-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div class="modal-product">
+                    <div class="modal-media">
+                        <img src="${product.image}" alt="${product.name}" class="modal-image">
+                    </div>
+                    <div class="modal-details" data-id="${product.id}">
+                        <h3>Order ${product.name}</h3>
+                        <div class="modal-price">${formatCurrency(product.price, 'USD')}</div>
+                        
+                        <div class="modal-form">
+                            <div class="form-group">
+                                <label for="name">Full Name</label>
+                                <input type="text" id="name" placeholder="Your name">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" placeholder="Your email">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">WhatsApp Number</label>
+                                <input type="tel" id="phone" placeholder="+242 06 123 4567">
+                            </div>
+                            <div class="form-group">
+                                <label for="country">Country</label>
+                                <select id="country">
+                                    <option>Congo-Brazzaville</option>
+                                    <option>Zambia</option>
+                                    <option>Nigeria</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="payment">Payment Method</label>
+                                <select id="payment">
+                                    <option>Mobile Money</option>
+                                    <option>Bank Transfer</option>
+                                    <option>Cash on Delivery</option>
+                                    <option>Credit Card</option>
+                                </select>
+                            </div>
+                            <button type="button" class="form-submit">Complete Order</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+            
+            // Add event listener to close button
+            document.getElementById('close-modal').addEventListener('click', closeModal);
+            
+            // Add event listener to modal background
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('product-modal').classList.remove('active');
+        }
+        
+        // Admin panel toggle
+        document.getElementById('admin-panel').addEventListener('click', function() {
+            document.getElementById('admin-modal').classList.toggle('active');
+        });
+        
+        // Animated counters
+        function animateCounters() {
+            const productsCount = document.getElementById('products-count');
+            const usersCount = document.getElementById('users-count');
+            const salesCount = document.getElementById('sales-count');
+            
+            animateValue(productsCount, 0, 156, 2000);
+            animateValue(usersCount, 0, 843, 2000);
+            animateValue(salesCount, 0, 492, 2000);
+        }
+        
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                element.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+        
+        // Simulate WebSocket updates
+        function simulateWebSocket() {
+            setInterval(() => {
+                // Randomly update a product's status
+                const randomIndex = Math.floor(Math.random() * products.length);
+                const product = products[randomIndex];
+                
+                if (product.status === 'available') {
+                    product.status = 'upcoming';
+                } else {
+                    product.status = 'available';
+                }
+                
+                // Re-render products
+                renderProducts();
+                
+                // Show notification
+                showNotification(`${product.name} is now ${product.status === 'available' ? 'in stock' : 'coming soon'}`);
+            }, 15000);
+        }
+        
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.innerHTML = `
+                <i class="fas fa-bell"></i>
+                <span>${message}</span>
+            `;
+            
+            // Add some basic styles
+            notification.style.position = 'fixed';
+            notification.style.bottom = '20px';
+            notification.style.left = '20px';
+            notification.style.backgroundColor = 'var(--primary)';
+            notification.style.color = 'white';
+            notification.style.padding = '1rem 1.5rem';
+            notification.style.borderRadius = '4px';
+            notification.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+            notification.style.display = 'flex';
+            notification.style.alignItems = 'center';
+            notification.style.gap = '0.5rem';
+            notification.style.zIndex = '1000';
+            notification.style.animation = 'fadeIn 0.3s ease';
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderProducts();
+            animateCounters();
+            simulateWebSocket();
+            
+            // Add animation styles
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translateY(0); }
+                    to { opacity: 0; transform: translateY(20px); }
+                }
+                
+                .notification {
+                    animation: fadeIn 0.3s ease;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>
